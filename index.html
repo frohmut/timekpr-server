@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+
+<!--
+  Entry point for the timekpr HTML UI. (React/JSX UI)
+-->
+
+<html>
+<head>
+<title>TimeKeeper bei M5</title>
+<script src="libjs/react.js"></script>
+<script src="libjs/JSXTransformer.js"></script>
+<style>
+.modified {
+	color: blue;
+}
+.up-to-date {
+	color: green
+}
+.not-up-to-date {
+	color: red
+}
+</style>
+</head>
+<body>
+
+<!--
+  The React components all render into "content".
+  The View/Controler of the UI is TimekprBox.
+-->
+<div id="content"></div>
+<script src="timekpr-htmlgui.js" type="text/jsx"></script>
+<script type="text/jsx">
+React.render(
+  <TimekprBox />,
+  document.getElementById('content')
+);
+</script>
+
+
+</body>
+</html>
