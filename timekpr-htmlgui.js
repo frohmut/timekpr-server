@@ -239,7 +239,7 @@ var User = React.createClass({
             <span className={this.props.data.changed["time"] === true ? "modified" : "unchanged"} >{Tr.tr("Used time:")}</span><span ref="time">{this.props.data.config["time"] / 60}</span>
           </div>
           <div>
-            <span className={this.props.data.changed["time"] === true ? "modified" : "unchanged"} >{Tr.tr("Time Left:")}</span><span ref="time">{(this.props.data.config["limit"] - this.props.data.config["time"]) / 60}</span>
+            <span className={this.props.data.changed["time"] === true ? "modified" : "unchanged"} >{Tr.tr("Time Left:")}</span><span>{(this.props.data.config["limit"] - this.props.data.config["time"]) / 60}</span>
           </div>
           <div>
             <label>
