@@ -40,10 +40,17 @@ var TimekprBox = React.createClass({
   getInitialState: function () {
     this.userData = {};
     this.devices = {};
+    this.error = null;
     return {data: this.userData };
   },
   receivedData: function (json_text) {
-      var j = JSON.parse(json_text);
+      var j;
+      try {
+        j = JSON.parse(json_text);
+      }
+      catch (e) {
+        j = { "error": "got invalid config: " + e};
+      }
       var userData = {};
       for (k in j.users) {
         userData[k] = {};
@@ -53,6 +60,10 @@ var TimekprBox = React.createClass({
       this.userData = userData;
       this.devices = j.devices || {};
       this.last_change = j.last_change
+      if (j.error != null) {
+        this.error = j.error;
+      }
+
       this.setState({data: this.userData });
   },
   sendToServer: function (j) {
@@ -123,6 +134,26 @@ var TimekprBox = React.createClass({
           this.setState({data: this.userData });
       }
     }
+    else if (command == "add") {
+      if (this.userData[user] != null) {
+        /* error message? ... */
+        this.error = "Cannot add user >" + user + "<. User already exists."
+        this.setState({data: this.userData});
+        return;
+      }
+      this.userData[user] = {};
+      this.userData[user].config = {
+        userlocked: true,
+        limit: 0,
+        time: 0,
+      };
+      this.userData[user].changed = {
+        userlocked: true,
+        limit: true,
+        time: true,
+      };
+      this.setState({data: this.userData});
+    }
     else if (command == "submit") {
       /* did we change something? */
       var changedSomething = false;
@@ -160,12 +191,34 @@ var TimekprBox = React.createClass({
           <span>{Tr.tr("Last timestamp:")} </span>
           <span>{this.last_change}</span>
         </div>
+        <ErrorMessage error={this.error} />
         <h2>{Tr.tr("Users")}</h2>
         <UserList data={this.userData} handleAction={this.handleAction} />
         <h2>{Tr.tr("Devices")}</h2>
         <DeviceList data={this.devices} lastChange={this.last_change} />
       </div>
     );
+  },
+});
+
+/* Show error message (if there are any) */
+var ErrorMessage = React.createClass({
+  render: function () {
+    if (this.props.error == null) {
+      return (
+        <div>
+          <span> No Errors.</span>
+        </div>
+      );
+    }
+    else {
+      return (
+        <div>
+          <span>Error: </span>
+          <span className="error-message">{this.props.error}</span>
+        </div>
+      );
+    }
   },
 });
 
@@ -217,35 +270,42 @@ var User = React.createClass({
     /* clear value in the form */
     React.findDOMNode(this.refs.timeChange).value = "";
   },
-  tr: function (txt) {
-    /* here could be the entry point for translations */
-    return txt;
-  },
   render: function () {
     return (
+    <div className="userContainer">
       <div className="user">
-        <h3 className="userName">{this.props.name}</h3>
+        <h3 className="userName">{this.props.name ? this.props.name : Tr.tr("<unnamed>")}</h3>
         <form onSubmit={this.handleSubmit}>
           <div>
-            <label className={this.props.data.changed['userlocked'] == true ? "modified" : "unchanged"}>{Tr.tr("Account")}</label>
-            <input type="radio" id="open" value="open" checked={this.props.data.config["userlocked"] == false} ref="open" onChange={this.handleOpenAccount}>{Tr.tr("open")}</input>
-            <input type="radio" id="locked" value="locked" checked={this.props.data.config["userlocked"] == true} ref="locked" onChange={this.handleLockAccount}>{Tr.tr("locked")}</input>
+            <label className={this.props.data.changed['userlocked'] == true ? "modified" : "unchanged"}>{Tr.tr("Account:")} </label>
+            <span>
+              <label>
+                <input type="radio" id="open" value="open" checked={this.props.data.config["userlocked"] == false} ref="open" onChange={this.handleOpenAccount} />
+                {Tr.tr("open")}
+              </label>
+              <label>
+                <input type="radio" id="locked" value="locked" checked={this.props.data.config["userlocked"] == true} ref="locked" onChange={this.handleLockAccount} />
+                {Tr.tr("locked")}
+              </label>
+            </span>
           </div>
           <div>
             <span className={this.props.data.changed["limit"] == true ? "modified" : "unchanged"}>{Tr.tr("Daily Limit:")} </span>
               <input type="number" value={this.props.data.config["limit"] / 60} ref="limit" onChange={this.handleNewLimit} />
           </div>
           <div>
-            <span className={this.props.data.changed["time"] === true ? "modified" : "unchanged"} >{Tr.tr("Used time:")}</span><span ref="time">{this.props.data.config["time"] / 60}</span>
+            <span className={this.props.data.changed["time"] === true ? "modified" : "unchanged"} >{Tr.tr("Time used:")}</span><span ref="time">{this.props.data.config["time"] / 60}</span>
           </div>
           <div>
-            <span className={this.props.data.changed["time"] === true ? "modified" : "unchanged"} >{Tr.tr("Time Left:")}</span><span>{(this.props.data.config["limit"] - this.props.data.config["time"]) / 60}</span>
+            <span className={this.props.data.changed["time"] === true ? "modified" : "unchanged"} >{Tr.tr("Time left:")}</span><span>{(this.props.data.config["limit"] - this.props.data.config["time"]) / 60}</span>
           </div>
           <div>
             <label>
-              <span>{Tr.tr("Change today's time:")} </span>
+              <span>{Tr.tr("Change time:")} </span>
               <input type="number" placeholder={Tr.tr("in minutes ...")} ref="timeChange" />
             </label>
+          </div>
+          <div className="userTimeButtons">
             <button name="sub" onClick={this.handleTimeMod}>{Tr.tr("Reward")}</button>
             <button name="add" onClick={this.handleTimeMod}>{Tr.tr("Penalty")}</button>
           </div>
@@ -254,6 +314,7 @@ var User = React.createClass({
           </div>
         </form>
       </div>
+    </div>
     );
   },
 });
@@ -261,8 +322,16 @@ var User = React.createClass({
 /*
  * Render every user using the User component.
  * Pass the props to the User components.
+ * Adds new users.
  */
 var UserList = React.createClass({
+  addUser: function(e) {
+    e.preventDefault();
+    var newUser = React.findDOMNode(this.refs.newUserName).value;
+    this.props.handleAction("add", newUser, {});
+    /* clear name field */
+    React.findDOMNode(this.refs.newUserName).value = "";
+  },
   render: function() {
     var users = [];
     Object.keys(this.props.data).forEach(key => {
@@ -272,6 +341,8 @@ var UserList = React.createClass({
     });
     return (
       <div className="userList">
+        <input placeholder={Tr.tr("user name ...")} ref="newUserName" />
+        <button name="adduser" onClick={this.addUser}>{Tr.tr("Add User")}</button>
         {users}
       </div>
     );
