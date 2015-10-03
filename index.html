@@ -6,11 +6,12 @@
 
 <html>
 <head>
-<title>TimeKeeper bei M5</title>
+<title>TimeKeeper HTML UI</title>
 <meta charset="utf-8">
 <script src="libjs/react.js"></script>
 <script src="libjs/JSXTransformer.js"></script>
 <style>
+
 .modified {
 	color: blue;
 }
@@ -26,7 +27,7 @@
 
 .user {
 	border: 2px solid lightblue;
-	margin: 10px 0px 0px 0px;
+	margin: 5px;
 	display: inline-block;
 }
 .userName {
@@ -38,10 +39,27 @@
 	padding: 10px;
 }
 
-.userTimeButtons {
+.addUser {
+	width: 400px;
+}
+.userRow {
 	display: flex;
-	flex-direction: row;
-	justify-content: flex-end;
+	flex-wrap: wrap;
+	list-style: none;
+	width: 250px;
+}
+.userRow * {
+	flex: none;
+}
+
+.userRow > label {
+	flex: 0 0 40%;
+}
+
+input[type=number] {
+	max-width: 100px;
+	-moz-appearance: textfield;
+	appearance: none;
 }
 
 </style>

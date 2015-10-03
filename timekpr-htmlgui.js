@@ -276,7 +276,7 @@ var User = React.createClass({
       <div className="user">
         <h3 className="userName">{this.props.name ? this.props.name : Tr.tr("<unnamed>")}</h3>
         <form onSubmit={this.handleSubmit}>
-          <div>
+          <div className="userRow">
             <label className={this.props.data.changed['userlocked'] == true ? "modified" : "unchanged"}>{Tr.tr("Account:")} </label>
             <span>
               <label>
@@ -289,23 +289,24 @@ var User = React.createClass({
               </label>
             </span>
           </div>
-          <div>
-            <span className={this.props.data.changed["limit"] == true ? "modified" : "unchanged"}>{Tr.tr("Daily Limit:")} </span>
-              <input type="number" value={this.props.data.config["limit"] / 60} ref="limit" onChange={this.handleNewLimit} />
+          <div className="userRow">
+            <label className={this.props.data.changed["limit"] == true ? "modified" : "unchanged"}>{Tr.tr("Daily Limit:")} </label>
+            <input type="number" value={this.props.data.config["limit"] / 60} ref="limit" onChange={this.handleNewLimit} />
           </div>
-          <div>
-            <span className={this.props.data.changed["time"] === true ? "modified" : "unchanged"} >{Tr.tr("Time used:")}</span><span ref="time">{this.props.data.config["time"] / 60}</span>
+          <div className="userRow">
+            <label className={this.props.data.changed["time"] === true ? "modified" : "unchanged"} >{Tr.tr("Time used:")}</label>
+            <span ref="time">{this.props.data.config["time"] / 60}</span>
           </div>
-          <div>
-            <span className={this.props.data.changed["time"] === true ? "modified" : "unchanged"} >{Tr.tr("Time left:")}</span><span>{(this.props.data.config["limit"] - this.props.data.config["time"]) / 60}</span>
+          <div className="userRow">
+            <label className={this.props.data.changed["time"] === true ? "modified" : "unchanged"} >{Tr.tr("Time left:")}</label>
+            <span>{(this.props.data.config["limit"] - this.props.data.config["time"]) / 60}</span>
           </div>
-          <div>
-            <label>
-              <span>{Tr.tr("Change time:")} </span>
-              <input type="number" placeholder={Tr.tr("in minutes ...")} ref="timeChange" />
-            </label>
+          <div className="userRow">
+            <label>{Tr.tr("Change time:")} </label>
+            <input type="number" placeholder={Tr.tr("in minutes ...")} ref="timeChange" />
           </div>
-          <div className="userTimeButtons">
+          <div className="userRow">
+            <label></label>
             <button name="sub" onClick={this.handleTimeMod}>{Tr.tr("Reward")}</button>
             <button name="add" onClick={this.handleTimeMod}>{Tr.tr("Penalty")}</button>
           </div>
@@ -340,11 +341,15 @@ var UserList = React.createClass({
       );
     });
     return (
-      <div className="userList">
+    <div>
+      <div className="addUser">
         <input placeholder={Tr.tr("user name ...")} ref="newUserName" />
-        <button name="adduser" onClick={this.addUser}>{Tr.tr("Add User")}</button>
+        <button onClick={this.addUser}>{Tr.tr("Add User")}</button>
+      </div>
+      <div className="userList">
         {users}
       </div>
+    </div>
     );
   },
 });
